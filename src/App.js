@@ -122,12 +122,12 @@ class App extends React.Component{
 
   editChar = (event) =>{
     event.preventDefault();
-    let editId = parseInt(event.target.value);
+    let editId = this.state.idChar;
     let indexOdject = this.state.characters.findIndex( item => item.id === editId);
     console.log(editId);
     console.log(indexOdject);
     this.state.characters[indexOdject].name = this.state.nameChar;
-    // this.state.characters[indexOdject].age = parseInt(this.state.ageChar);
+    this.state.characters[indexOdject].age = parseInt(this.state.ageChar);
     console.log(this.state.characters[indexOdject]);
   
     this.forceUpdate();
@@ -145,7 +145,7 @@ class App extends React.Component{
   
     return(
       <>
-       <TableCharacter listChar = {this.state.characters} changeName ={this.changeName} getCharacter ={this.editChar} deleteCharacter = {this.deleteChar}/>
+       <TableCharacter listChar = {this.state.characters} changeName ={this.changeName} getCharacter ={this.getChar} deleteCharacter = {this.deleteChar}/>
       
         <br/>
         <form >
@@ -155,13 +155,13 @@ class App extends React.Component{
                 <input type="text"  onChange={this.changeId} value={this.state.idChar}  readOnly/>
                 <br/><br/>
                 <p>Name:</p>
-                <input type="text"  ref={this.myRef} onChange={this.changeName}  placeholder="Input character'name"/>
+                <input type="text"  ref={this.myRef} onChange={this.changeName} value={this.state.nameChar}  placeholder="Input character'name"/>
                 <p>{this.state.message}</p>
                 <p>Age:</p>
                 <input type="text"  onChange={this.changeAge} value={this.state.ageChar} placeholder="Input characte'age"/>
                 <br/><br/>
                 <button className="btn btn-default" type="submit" onClick={this.addChar}>Add character</button>
-             
+                <button className="btn btn-default" type="submit" onClick={this.editChar}>Edit character</button>
                
             </div>
            
