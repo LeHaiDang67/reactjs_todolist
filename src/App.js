@@ -8,6 +8,36 @@ let character = [
   {id: 4, name : "Nami", age : 22}
 ]
 
+function TableCharacter (props){
+ return(
+      <table className="table"> 
+      <thead>
+          <tr>
+            <th>Id</th>
+            <th>Name</th> 
+            <th>Age</th>
+            <th>Edit</th>
+            <th>Delete</th>
+          </tr> 
+      </thead>
+      <tbody> 
+        {character.map((item)=>
+          <tr key={item.id}>
+            <td>{item.id}</td>
+            <td>{item.name}</td>
+            <td>{item.age}</td>
+            <td><button className="btn btn-default" onClick = {props.getCharacter} value={item.id}>O</button></td>
+            <td><button className="btn btn-default" onClick = {props.deleteCharacter} value= {item.id}>X</button></td>
+            
+          </tr>
+        )}
+      </tbody>
+      </table>
+  );
+     
+  
+}
+
 class App extends React.Component{
   constructor(props){
     super(props)
@@ -60,7 +90,6 @@ class App extends React.Component{
 
   deleteChar = (event) =>{
    let deleteId = parseInt (event.target.value);
-   
    character.splice(character.findIndex(item => item.id === deleteId),1);
    this.forceUpdate();
  
@@ -69,7 +98,6 @@ class App extends React.Component{
   getChar = (event) => {
     let editId = parseInt(event.target.value);
     let a = character.find(item => (item.id === editId));
-   
     this.setState({idChar: a.id ,nameChar: a.name, ageChar:a.age});
     
   }
@@ -97,32 +125,9 @@ class App extends React.Component{
   render(){ 
   
     return(
-      <> 
-       <table className="table"> 
-        <thead>
-            <tr>
-              <th>Id</th>
-              <th>Name</th> 
-              <th>Age</th>
-              <th>Edit</th>
-              <th>Delete</th>
-            </tr> 
-        </thead>
-           
+      <>
+       <TableCharacter getCharacter ={this.getChar} deleteCharacter = {this.deleteChar}/>
       
-         <tbody> 
-           {character.map((item)=>
-             <tr key={item.id}>
-              <td>{item.id}</td>
-              <td>{item.name}</td>
-              <td>{item.age}</td>
-              <td><button className="btn btn-default" onClick = {this.getChar} value={item.id}>O</button></td>
-              <td><button className="btn btn-default" onClick = {this.deleteChar} value= {item.id}>X</button></td>
-              
-            </tr>
-           )}
-         </tbody>
-        </table>
         <br/>
         <form >
           <div className="row">

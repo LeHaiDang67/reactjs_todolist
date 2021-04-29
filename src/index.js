@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { Single, ToggleLignt } from './Reuse';
-import App from './App'
+import App from './App';
 
 
 ReactDOM.render(
