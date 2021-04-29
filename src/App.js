@@ -1,7 +1,7 @@
 import './App.css';
 import React, { Component } from 'react';
 
-let character = [
+let listData = [
   {id : 1, name : "Luffy", age : 22},
   {id: 2, name : "Naruto", age : 36},
   {id : 3, name : "Saitama", age : 27},
@@ -21,15 +21,17 @@ function TableCharacter (props){
           </tr> 
       </thead>
       <tbody> 
-        {character.map((item)=>
+        {props.listChar.map((item)=>
+      
           <tr key={item.id}>
-            <td>{item.id}</td>
-            <td>{item.name}</td>
+            <td >{item.id}</td>
+            <td><input defaultValue={item.name} onChange={props.changeName}  type = "text"/></td>
             <td>{item.age}</td>
             <td><button className="btn btn-default" onClick = {props.getCharacter} value={item.id}>O</button></td>
             <td><button className="btn btn-default" onClick = {props.deleteCharacter} value= {item.id}>X</button></td>
             
           </tr>
+         
         )}
       </tbody>
       </table>
@@ -46,9 +48,24 @@ class App extends React.Component{
       nameChar: '',
       ageChar: 0,
       message:'',
-      listChar: []
+      characters : []
     }
     this.myRef = React.createRef();
+  }
+
+  componentDidMount(){
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(listData)
+      }, 1000)
+    }).then(
+      (data) => {
+        this.setState({ characters: data});
+        console.log(data)
+      }
+    ).catch( (Error) =>{
+      console.log(Error);
+    })
   }
 
   changeId = (event)=>{
@@ -57,6 +74,7 @@ class App extends React.Component{
 
   changeAge = (event)=>{
     this.setState({ageChar : event.target.value})
+  
     this.setState({message : ""})
   }
   changeName = (event)=>{
@@ -68,15 +86,15 @@ class App extends React.Component{
     event.preventDefault()
     if(this.state.nameChar !=="")
       { 
-         var findObj = character.find(item => item.name.toLowerCase() === this.state.nameChar.toLowerCase());
+         var findObj = this.state.characters.find(item => item.name.toLowerCase() === this.state.nameChar.toLowerCase());
          if(findObj){
            this.setState({message: "Your character'name is existed"});
            console.log("same name");
          }
          else{
-          var newId = character[character.length-1].id + 1;
+          var newId = this.state.characters[this.state.characters.length-1].id + 1;
           var newChar = {id: newId,name: this.state.nameChar, age: this.state.ageChar};
-          character.push(newChar);
+          this.state.characters.push(newChar);
           this.forceUpdate()
          }
        
@@ -90,35 +108,36 @@ class App extends React.Component{
 
   deleteChar = (event) =>{
    let deleteId = parseInt (event.target.value);
-   character.splice(character.findIndex(item => item.id === deleteId),1);
+   this.state.characters.splice(this.state.characters.findIndex(item => item.id === deleteId),1);
    this.forceUpdate();
  
   }
   
   getChar = (event) => {
     let editId = parseInt(event.target.value);
-    let a = character.find(item => (item.id === editId));
+    let a = this.state.characters.find(item => (item.id === editId));
     this.setState({idChar: a.id ,nameChar: a.name, ageChar:a.age});
     
   }
 
   editChar = (event) =>{
     event.preventDefault();
-    let editId = this.state.idChar;
-    let indexOdject = character.findIndex( item => item.id === editId);
-    character[indexOdject].name = this.state.nameChar;
-    character[indexOdject].age = parseInt(this.state.ageChar);
-    console.log(character[indexOdject]);
-    console.log(this.state.age);
+    let editId = parseInt(event.target.value);
+    let indexOdject = this.state.characters.findIndex( item => item.id === editId);
+    console.log(editId);
+    console.log(indexOdject);
+    this.state.characters[indexOdject].name = this.state.nameChar;
+    // this.state.characters[indexOdject].age = parseInt(this.state.ageChar);
+    console.log(this.state.characters[indexOdject]);
+  
     this.forceUpdate();
   }
 
   searchChar = (event) =>{
     event.preventDefault();
     this.myRef.current.focus();
-    var findObj = character.find(item => item.name.toLowerCase() === this.state.nameChar.toLowerCase());
+    var findObj = this.state.characters.find(item => item.name.toLowerCase() === this.state.nameChar.toLowerCase());
     this.setState({listChar:[findObj]});
-        
 
   }
 
@@ -126,23 +145,23 @@ class App extends React.Component{
   
     return(
       <>
-       <TableCharacter getCharacter ={this.getChar} deleteCharacter = {this.deleteChar}/>
+       <TableCharacter listChar = {this.state.characters} changeName ={this.changeName} getCharacter ={this.editChar} deleteCharacter = {this.deleteChar}/>
       
         <br/>
         <form >
           <div className="row">
             <div className="col-md-6">
                 <p>Id:</p>
-                <input type="text" name="nameChar" onChange={this.changeId} value={this.state.idChar}  readOnly/>
+                <input type="text"  onChange={this.changeId} value={this.state.idChar}  readOnly/>
                 <br/><br/>
                 <p>Name:</p>
-                <input type="text" name="nameChar" ref={this.myRef} onChange={this.changeName} value={this.state.nameChar} placeholder="Input character'name"/>
+                <input type="text"  ref={this.myRef} onChange={this.changeName}  placeholder="Input character'name"/>
                 <p>{this.state.message}</p>
                 <p>Age:</p>
-                <input type="text" name="ageChar" onChange={this.changeAge} value={this.state.ageChar} placeholder="Input characte'age"/>
+                <input type="text"  onChange={this.changeAge} value={this.state.ageChar} placeholder="Input characte'age"/>
                 <br/><br/>
                 <button className="btn btn-default" type="submit" onClick={this.addChar}>Add character</button>
-                <button className="btn btn-default" type="submit" onClick={this.editChar}>Edit character</button>
+             
                
             </div>
            
