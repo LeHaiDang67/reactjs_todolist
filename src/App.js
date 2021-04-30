@@ -1,15 +1,43 @@
 import './App.css';
 import React, { Component } from 'react';
 
-let listData = [
-  {id : 1, name : "Luffy", age : 22},
-  {id: 2, name : "Naruto", age : 36},
-  {id : 3, name : "Saitama", age : 27},
-  {id: 4, name : "Nami", age : 22}
-]
 
-function TableCharacter (props){
- return(
+class TableCharacter extends React.Component{
+  constructor(props){
+    super(props)
+    this.state = {
+      listCharacter : []
+    }
+  }
+  componentDidMount(){
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(this.props.listChar);
+      }, 1000)
+    }).then(
+      (data) => {
+        this.setState({ listCharacter: data});
+      }
+    ).catch( (Error) =>{
+      console.log(Error);
+    })
+  }
+  componentDidUpdate(prevProps){ 
+   if(prevProps.listChar !== this.state.listCharacter){
+    this.setState({listCharacter : this.props.listChar});
+   
+   }
+  
+    console.log('Component did update!');
+  }
+
+  changeNameTable = (event) =>{
+    console.log(event.target.value);
+    this.setState({nameTable: event.target.value});
+  }
+
+  render() {
+    return(
       <table className="table"> 
       <thead>
           <tr>
@@ -21,14 +49,14 @@ function TableCharacter (props){
           </tr> 
       </thead>
       <tbody> 
-        {props.listChar.map((item)=>
+        {this.state.listCharacter.map((item, index)=>
       
           <tr key={item.id}>
             <td >{item.id}</td>
-            <td><input defaultValue={item.name} onChange={props.changeName}  type = "text"/></td>
+            <td><input value={item.name} onChange={this.changeNameTable} type = "text"/></td>
             <td>{item.age}</td>
-            <td><button className="btn btn-default" onClick = {props.getCharacter} value={item.id}>O</button></td>
-            <td><button className="btn btn-default" onClick = {props.deleteCharacter} value= {item.id}>X</button></td>
+            <td><button className="btn btn-default" onClick = {this.props.getCharacter} value={item.id}>O</button></td>
+            <td><button className="btn btn-default" onClick = {this.props.deleteCharacter} value= {item.id}>X</button></td>
             
           </tr>
          
@@ -36,6 +64,8 @@ function TableCharacter (props){
       </tbody>
       </table>
   );
+  }
+ 
      
   
 }
@@ -46,27 +76,20 @@ class App extends React.Component{
     this.state = {
       idChar : 0,
       nameChar: '',
+      arrName: [],
       ageChar: 0,
       message:'',
-      characters : []
+      characters : [
+        {id : 1, name : "Luffy", age : 22},
+        {id: 2, name : "Naruto", age : 36},
+        {id : 3, name : "Saitama", age : 27},
+        {id: 4, name : "Nami", age : 22}
+      ]
     }
     this.myRef = React.createRef();
   }
 
-  componentDidMount(){
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(listData)
-      }, 1000)
-    }).then(
-      (data) => {
-        this.setState({ characters: data});
-        console.log(data)
-      }
-    ).catch( (Error) =>{
-      console.log(Error);
-    })
-  }
+ 
 
   changeId = (event)=>{
     this.setState({idChar : event.target.value})
@@ -94,8 +117,9 @@ class App extends React.Component{
          else{
           var newId = this.state.characters[this.state.characters.length-1].id + 1;
           var newChar = {id: newId,name: this.state.nameChar, age: this.state.ageChar};
-          this.state.characters.push(newChar);
-          this.forceUpdate()
+          var arrChar = this.state.characters;
+          arrChar.push(newChar);
+          this.setState({characters : arrChar});
          }
        
       }
@@ -108,9 +132,9 @@ class App extends React.Component{
 
   deleteChar = (event) =>{
    let deleteId = parseInt (event.target.value);
-   this.state.characters.splice(this.state.characters.findIndex(item => item.id === deleteId),1);
-   this.forceUpdate();
- 
+   var arrChar = this.state.characters;
+   arrChar.splice(this.state.characters.findIndex(item => item.id === deleteId),1);
+   this.setState({characters: arrChar});
   }
   
   getChar = (event) => {
@@ -123,14 +147,10 @@ class App extends React.Component{
   editChar = (event) =>{
     event.preventDefault();
     let editId = this.state.idChar;
-    let indexOdject = this.state.characters.findIndex( item => item.id === editId);
-    console.log(editId);
-    console.log(indexOdject);
-    this.state.characters[indexOdject].name = this.state.nameChar;
-    this.state.characters[indexOdject].age = parseInt(this.state.ageChar);
-    console.log(this.state.characters[indexOdject]);
-  
-    this.forceUpdate();
+    this.setState( prevState => ({ 
+     characters: prevState.characters.map( item => 
+      (item.id === editId ? Object.assign( item , {name : prevState.nameChar , age : prevState.ageChar }): item))
+    }))
   }
 
   searchChar = (event) =>{
@@ -145,7 +165,7 @@ class App extends React.Component{
   
     return(
       <>
-       <TableCharacter listChar = {this.state.characters} changeName ={this.changeName} getCharacter ={this.getChar} deleteCharacter = {this.deleteChar}/>
+       <TableCharacter listChar = {this.state.characters}  getCharacter ={this.getChar} deleteCharacter = {this.deleteChar}/>
       
         <br/>
         <form >
