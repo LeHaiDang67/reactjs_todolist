@@ -1,6 +1,12 @@
 import './App.css';
 import React, { Component } from 'react';
 
+let listData = [
+  {id : 1, name : "Luffy", age : 22},
+  {id: 2, name : "Naruto", age : 36},
+  {id : 3, name : "Saitama", age : 27},
+  {id: 4, name : "Nami", age : 22}
+]
 
 class CharacterRow extends React.Component {
   constructor(props) {
@@ -8,44 +14,29 @@ class CharacterRow extends React.Component {
     this.state = {
       character: {
         id: 0,
-        name: "",
+        name: '',
         age: 0
       }
     }
   }
-  componentDidMount() {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(this.props.rowChar);
-      }, 1000)
-    }).then(
-      (data) => {
-        this.setState({ character: data });
-      }
-    ).catch((Error) => {
-      console.log(Error);
-    })
-  }
-  // componentDidUpdate() will when the props update if it changed. We use componentDidMount() because componentDidMount() is already called - call only onetime
+
   componentDidUpdate(prevProps) {
     if (prevProps.rowChar.name !== this.state.character.name) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          resolve(this.props.rowChar);
+          resolve(this.props.rowChar)
         }, 1000)
       }).then(
         (data) => {
-          console.log('Component did update!');
-          this.setState({ character: data });
-          
+          this.setState({ character: data});
+         
         }
-      ).catch((Error) => {
+      ).catch( (Error) =>{
         console.log(Error);
       })
-      
     }
-   
-   
+    console.log("update component!")
+
   }
 
   changeName = (event) => {
@@ -53,8 +44,17 @@ class CharacterRow extends React.Component {
   }
 
   render() {
+    const singleChar = this.props.rowChar;
     return (
-      <input value={this.state.character.name} onChange={this.changeName} type="text" />
+     
+        <tr key={singleChar.id}>  
+          <td>{singleChar.id}</td>
+          <td><input type='text' value={singleChar.name} onChange={this.changeName}/></td>
+          <td>{singleChar.age}</td>
+          <td><button className="btn btn-default" onClick={this.props.getChar} value={singleChar.id}>O</button></td>
+          <td><button className="btn btn-default" onClick={this.props.deleteChar} value={singleChar.id}>X</button></td>
+        </tr>
+    
     );
   }
 }
@@ -68,14 +68,24 @@ class App extends React.Component {
       ageChar: 0,
       message: '',
       characters: [
-        { id: 1, name: "Luffy", age: 22 },
-        { id: 2, name: "Naruto", age: 36 },
-        { id: 3, name: "Saitama", age: 27 },
-        { id: 4, name: "Nami", age: 22 }
       ]
     }
     this.myRef = React.createRef();
   }
+  componentDidMount(){
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(listData)
+      }, 1000)
+    }).then(
+      (data) => {
+        this.setState({ characters: data});
+      }
+    ).catch( (Error) =>{
+      console.log(Error);
+    })
+  }
+  
 
   makeCharacter = (newId) => {
     return {
@@ -168,16 +178,9 @@ class App extends React.Component {
           </thead>
           <tbody>
             {this.state.characters.map((item, index) =>
-
-              <tr key={item.id}>
-                <td >{item.id}</td>
-                <td><CharacterRow rowChar={item} /></td>
-                <td>{item.age}</td>
-                <td><button className="btn btn-default" onClick={this.getChar} value={item.id}>O</button></td>
-                <td><button className="btn btn-default" onClick={this.deleteChar} value={item.id}>X</button></td>
-
-              </tr>
-
+                <React.Fragment key={item.id}>
+                    <CharacterRow rowChar={item} deleteChar={this.deleteChar} getChar={this.getChar} />
+                </React.Fragment>
             )}
           </tbody>
         </table>
