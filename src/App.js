@@ -1,5 +1,5 @@
 import './App.css';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 let listData = [
   { id: 1, name: "Luffy", age: 22 },
@@ -10,48 +10,51 @@ let listData = [
 
 const CharacterRow = (props) => {
   const [character, setCharacter] = useState({
-    id: 0,
-    name: '',
-    age: 0
-  }
-  );
-  const [nameChar, setNameChar] = useState('');
+    // id: 0,
+    // name: '',
+    // age: 0
+  });
 
   useEffect(() => {
     if (props.rowChar !== character) {
       setCharacter(props.rowChar)
     }
-    console.log("update component!")
   })
 
-
-  const changeName = (event) => {
-    this.setState({ ...character, name: event.target.value });
-  }
-
-
-  const singleChar = props.rowChar;
   return (
-    <tr key={singleChar.id}>
-      <td>{singleChar.id}</td>
-      <td><input type='text' value={singleChar.name} onChange={changeName} /></td>
-      <td>{singleChar.age}</td>
-      <td><button className="btn btn-default" onClick={props.getChar} value={singleChar.id}>O</button></td>
-      <td><button className="btn btn-default" onClick={props.deleteChar} value={singleChar.id}>X</button></td>
-    </tr>
+    <form >
+    <div className="row">
+      
+      <div className="col-md-6">
+        <p>Id:</p>
+        <input type="text" name='id' onChange={props.onChangeValue} value={character.id ? character.id : ''} readOnly />
+        <br /><br />
+        <p>Name:</p>
+        <input type="text" name='name' onChange={props.onChangeValue} value={character.name ? character.name : ''} placeholder="Input character'name" />
+        <p>{props.messageErr}</p>
+        <p>Age:</p>
+        <input type="text" name='age' onChange={props.onChangeValue} value={character.age ? character.age : '' } placeholder="Input characte'age" />
+        <br /><br />
+        <button className="btn btn-default col-md-2" style={{margin:'5px'}} type="submit" onClick={props.searchChar} title='Search by name'>Search</button>
+        <button className="btn btn-default col-md-2" style={{margin:'5px'}} type="submit" onClick={props.addChar}>Add</button>
+        <button className="btn btn-default col-md-2" style={{margin:'5px'}} type="submit" onClick={props.editChar}>Edit</button>
+        <button className="btn btn-default col-md-2" style={{margin:'5px'}} type="submit" onClick={props.clearChar}>Clear</button>
+      </div>
+
+    </div>
+
+  </form>
 
   );
 }
 
 const App = () => {
-
-  const [idChar, setIdChar] = useState(0);
-  const [nameChar, setNameChar] = useState('');
-  const [ageChar, setAgeChar] = useState(0);
   const [message, setMessage] = useState('');
   const [characters, setCharacters] = useState([]);
-
-  const myRef = useRef();
+  const [selectedItem, setSelectedItem] = useState({});
+  const [resetFlag, setResetFlag] = useState(1);
+  const [messageSearch, setMessageSearch ] = useState('');
+  const [isSearchSucceed, setIsSearchSucceed] = useState(false);
 
   useEffect(() => {
     return new Promise((resolve, reject) => {
@@ -65,35 +68,28 @@ const App = () => {
     ).catch((Error) => {
       console.log(Error);
     })
-  }, []);
+  }, [resetFlag]);
 
 
   const makeCharacter = (newId) => {
     return {
       id: newId,
-      name: nameChar,
-      age: ageChar
+      name: selectedItem.name,
+      age: selectedItem.age
     }
   }
+  
+  const changeInputValue = (event) => {
+      let target = event.target;
+      setSelectedItem({...selectedItem, [target.name]: target.value});
+  };
 
-  const changeId = (event) => {
-    setIdChar(event.target.value)
-  }
-
-  const changeAge = (event) => {
-    setAgeChar(event.target.value);
-    setMessage('');
-  }
-  const changeName = (event) => {
-    setNameChar(event.target.value);
-    setMessage('');
-  }
 
   const addChar = (event) => {
     event.preventDefault()
-    myRef.current.focus();
-    if (nameChar !== "") {
-      let findObj = characters.find(item => item.name.toLowerCase() === nameChar.toLowerCase());
+  
+    if (selectedItem.name !== "") {
+      let findObj = characters.find(item => item.name.toLowerCase() === selectedItem.name.toLowerCase());
       if (findObj) {
         setMessage("Your character'name is existed");
         console.log("same name");
@@ -117,27 +113,54 @@ const App = () => {
     let cloneChar = [...characters];
     cloneChar.splice(cloneChar.findIndex(item => item.id === deleteId), 1);
     setCharacters(cloneChar);
-    setIdChar(0);
-    setNameChar('');
-    setAgeChar(0);
+    setSelectedItem({});
   }
 
   const getChar = (event) => {
     let editId = parseInt(event.target.value);
     let a = characters.find(item => (item.id === editId));
-    setIdChar(a.id);
-    setNameChar(a.name);
-    setAgeChar(a.age);
+    setSelectedItem(a);
   }
 
   const editChar = (event) => {
     event.preventDefault();
-    let editId = idChar;
+    let editId = selectedItem.id;
     setCharacters(characters.map(item =>
-      (item.id === editId ? Object.assign(item, { name: nameChar, age: ageChar }) : item)
+      (item.id === editId ? {...item, name: selectedItem.name, age: selectedItem.age} : item)
     ));
 
   }
+
+  const searchChar = (event) =>{
+    event.preventDefault();
+    let selectedName = selectedItem.name;
+    let selectedArr = [];
+    if(selectedName === '' || selectedName === undefined)
+    {
+      setMessage("Please input name");
+    } else{
+      characters.map((item, index) => {
+        if(item.name.toLowerCase() == selectedName.toLowerCase()){
+          selectedArr.push(item);
+        }
+      });
+      if(selectedArr.length == 0){
+        setMessageSearch("No search results");
+        setIsSearchSucceed(true);
+      }
+      setCharacters(selectedArr);
+      
+      
+    }
+  
+  };
+
+  const clearChar = (event) =>{
+    event.preventDefault();
+    setSelectedItem({});
+    setIsSearchSucceed(false);
+    setResetFlag(resetFlag + 1);
+  };
 
   return (
     <>
@@ -153,33 +176,25 @@ const App = () => {
         </thead>
         <tbody>
           {characters.map((item, index) =>
-            <React.Fragment key={item.id}>
-              <CharacterRow rowChar={item} deleteChar={deleteChar} getChar={getChar} />
-            </React.Fragment>
+               <tr key={item.id}>
+                <td>{item.id}</td>
+                <td><input type='text' value={item.name} onChange={changeInputValue} /></td>
+                <td>{item.age}</td>
+                <td><button className="btn btn-default" onClick={getChar} value={item.id}>O</button></td>
+                <td><button className="btn btn-default" onClick={deleteChar} value={item.id}>X</button></td>
+              </tr>
           )}
         </tbody>
       </table>
+      {isSearchSucceed ? <h2>{messageSearch}</h2>:''}
       <br />
-      <form >
-        <div className="row">
-          <div className="col-md-6">
-            <p>Id:</p>
-            <input type="text" onChange={changeId} value={idChar} readOnly />
-            <br /><br />
-            <p>Name:</p>
-            <input type="text" ref= {myRef} onChange={changeName} value={nameChar} placeholder="Input character'name" />
-            <p>{message}</p>
-            <p>Age:</p>
-            <input type="text" onChange={changeAge} value={ageChar} placeholder="Input characte'age" />
-            <br /><br />
-            <button className="btn btn-default" type="submit" onClick={addChar}>Add character</button>
-            <button className="btn btn-default" type="submit" onClick={editChar}>Edit character</button>
-
-          </div>
-
-        </div>
-
-      </form>
+      <CharacterRow rowChar={selectedItem}
+              onChangeValue={changeInputValue}
+              messageErr={message}
+              searchChar={searchChar}
+              addChar={addChar} 
+              editChar={editChar} 
+              clearChar={clearChar} />
 
     </>
   )
